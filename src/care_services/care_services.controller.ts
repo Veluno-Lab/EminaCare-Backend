@@ -6,11 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { CareServiceService } from './care_services.service';
 import { CreateCareServiceDto } from './dtos/care_service-create.dto';
 import { UpdateCareServiceDto } from './dtos/care_service-update.dto';
+// import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 
+// @UseGuards(SupabaseAuthGuard)
 @Controller('care-services')
 export class CareServiceController {
   constructor(private readonly careService: CareServiceService) {}

@@ -19,32 +19,60 @@ export class AuthService {
     );
   }
 
-  async register(email: string, password: string): Promise<any> {
+  async register(
+    email: string,
+    password: string,
+    fullName: string,
+    phone: string,
+    role: UserRole,
+    dateOfBirth?: Date,
+  ): Promise<any> {
+    // Kiểm tra role hợp lệ
+    if (![UserRole.MOMMY, UserRole.CAREGIVER].includes(role)) {
+      throw new UnauthorizedException('Vai trò không hợp lệ');
+    }
+  
+    // Kiểm tra số điện thoại đã tồn tại
+    const phoneExists = await this.userRepo.findOne({ where: { phone } });
+    if (phoneExists) {
+      throw new UnauthorizedException('Số điện thoại đã được sử dụng');
+    }
+  
+    // Kiểm tra email đã tồn tại
+    const emailExists = await this.userRepo.findOne({ where: { email } });
+    if (emailExists) {
+      throw new UnauthorizedException('Email đã được sử dụng');
+    }
+  
+    // Gọi Supabase để đăng ký
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
     });
-
+  
     if (error) throw new UnauthorizedException(error.message);
-
+  
     const { user } = data;
-
-    // Sync với DB nếu chưa có
-    const existing = await this.userRepo.findOne({ where: { id: user.id } });
-
-    if (!existing) {
-      const newUser = this.userRepo.create({
-        id: user.id,
-        email: user.email,
-        role: UserRole.MOMMY,
-        isVerified: false,
-      });
-      await this.userRepo.save(newUser);
-    }
-
+  
+    // Tạo user trong hệ thống
+    const newUser = this.userRepo.create({
+      id: user.id,
+      email: user.email,
+      phone,
+      role,
+      fullName,
+      dateOfBirth,
+      isVerified: false,
+    });
+  
+    await this.userRepo.save(newUser);
+  
     return {
       id: user.id,
       email: user.email,
+      phone,
+      role,
+      dateOfBirth,
     };
   }
 
