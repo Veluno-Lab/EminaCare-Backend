@@ -85,13 +85,14 @@ export class AuthService {
     if (error) throw new UnauthorizedException(error.message);
 
     const { user, session } = data;
-
+    const userFromDB = await this.userRepo.findOne({ where: { id: user.id } });
     return {
       access_token: session.access_token,
       refresh_token: session.refresh_token,
       user: {
         id: user.id,
         email: user.email,
+        role: userFromDB?.role,
       },
     };
   }

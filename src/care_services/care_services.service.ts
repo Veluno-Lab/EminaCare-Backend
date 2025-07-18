@@ -30,6 +30,7 @@ export class CareServiceService {
   async update(id: string, dto: UpdateCareServiceDto): Promise<CareService> {
     const service = await this.findOne(id);
     const updated = Object.assign(service, dto);
+    console.log(updated)
     return this.careServiceRepo.save(updated);
   }
 
